@@ -10,7 +10,7 @@
         <!-- Work Form -->
         <div class="card bg-base-100 shadow mt-8">
             <div class="card-body">
-                <form method="POST" action="/works">
+                <form method="POST" action="{{ route('works.store') }}">
                     @csrf
 
                     <div class="form-control w-full">
@@ -88,7 +88,7 @@
 
                             <div class="flex flex-col gap-2">
                                 @if($work->status === 'pending')
-                                    <form">
+                                    <form method="POST" action="{{ route('works.start', $work) }}">
                                         @csrf
                                         <button class="btn btn-success btn-xs">Start</button>
                                     </form>
@@ -97,6 +97,13 @@
                                         @csrf
                                         <button class="btn btn-warning btn-xs">Stop</button>
                                     </form>
+                                @endif
+
+                                @if ($work->status !== 'completed')
+                                    <form method="POST" action="{{ route('works.completed', $work) }}">
+                                    @csrf   
+                                        <button class="btn btn-primary btn-xs">Done</button>
+                                </form>
                                 @endif
 
                                 <div class="flex gap-2">
