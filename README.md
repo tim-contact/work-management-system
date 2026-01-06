@@ -1,59 +1,72 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Work Management System (WMS)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Simple work tracking app built for an internship evaluation. Users can create work items, track work sessions, and mark work as completed. The project uses two MySQL databases: one for users/auth and another for work data.
 
-## About Laravel
+## Features
+- User registration, login, and logout.
+- Create, edit, and delete work items.
+- Start and stop work sessions with duration tracking.
+- Mark work as completed.
+- Per-user access control via policies.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Tech Stack
+- Laravel 12 (PHP 8.2)
+- MySQL (two connections)
+- Blade + Tailwind CSS (DaisyUI) + Vite
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Architecture Notes
+- Users and auth-related tables live in the `mysql_auth` connection.
+- Work and work session tables live in the `mysql_work` connection.
+- Models explicitly set their connection in `app/Models/User.php` and `app/Models/Work.php`.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Setup
+1. Install dependencies:
+   - `composer install`
+   - `npm install`
+2. Create `.env`:
+   - `cp .env.example .env`
+3. Configure database connections in `.env`:
+   - `DB_CONNECTION=mysql_auth`
+   - `DB_HOST=127.0.0.1`
+   - `DB_PORT=3306`
+   - `DB_DATABASE=work_management_auth`
+   - `DB_USERNAME=root`
+   - `DB_PASSWORD=`
+   - `WORK_DB_HOST=127.0.0.1`
+   - `WORK_DB_PORT=3306`
+   - `WORK_DB_DATABASE=work_management_work`
+   - `WORK_DB_USERNAME=root`
+   - `WORK_DB_PASSWORD=`
+4. Generate the app key:
+   - `php artisan key:generate`
+5. Run migrations:
+   - `php artisan migrate --path=database/migrations/auth --database=mysql_auth`
+   - `php artisan migrate --path=database/migrations/work --database=mysql_work`
+   - `php artisan migrate`
+6. Build assets:
+   - `npm run build`
 
-## Learning Laravel
+## Run the App
+- `php artisan serve`
+- `npm run dev`
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+App routes:
+- `GET /register` and `POST /register`
+- `GET /login` and `POST /login`
+- `POST /logout`
+- `GET /works` (dashboard)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Usage
+1. Register a new user.
+2. Create work items from the dashboard.
+3. Start/stop sessions to track time.
+4. Mark work as completed when finished.
 
-## Laravel Sponsors
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Project Structure
+- `app/Http/Controllers/WorkController.php` - Work CRUD and session logic.
+- `app/Policies/WorkPolicy.php` - Authorization rules.
+- `app/Models/Work.php` and `app/Models/WorkSession.php` - Work data models.
+- `database/migrations/auth` - Users, sessions, and password reset tables.
+- `database/migrations/work` - Work and work session tables.
+- `resources/views/work` - Work views.
