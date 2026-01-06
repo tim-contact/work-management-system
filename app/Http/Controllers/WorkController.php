@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Work;
 use App\Models\WorkSession;
+use App\Http\Controllers\Controller;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class WorkController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of the resource.
      */
@@ -30,6 +33,7 @@ class WorkController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', Work::class);
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -56,6 +60,7 @@ class WorkController extends Controller
      */
     public function edit(Work $work)
     {
+        $this->authorize('update', $work);
         return view ('work.edit', compact('work'));
     }
 
@@ -64,6 +69,7 @@ class WorkController extends Controller
      */
     public function update(Request $request, Work $work)
     {
+        $this->authorize('update', $work);
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -82,12 +88,13 @@ class WorkController extends Controller
      */
     public function destroy(Work $work)
     {
+        $this->authorize('delete', $work);
         $work->delete();
         return redirect('/works')->with('success', 'Work deleted successfully.');     
     }
 
     public function start(Work $work) {
-        abort_unless ($work->user_id === auth()->id(), 403);
+        $this->authorize('start', $work);
 
         if ($work->status === 'completed') {
             return back()->withErrors(['status' => 'Completed work cannot be started.']);
@@ -110,7 +117,7 @@ class WorkController extends Controller
     }
 
     public function stop(Work $work) {
-        abort_unless ($work->user_id === auth()->id(), 403);
+        $this->authorize('stop', $work);
 
         if ($work->status === 'completed') {
             return back()->withErrors(['status' => 'Completed work cannot be stopped.']);
@@ -146,7 +153,7 @@ class WorkController extends Controller
     }
 
     public function completed(Work $work) {
-        abort_unless ($work->user_id === auth()->id(), 403);
+        $this->authorize('completed', $work);
 
         if ($work->status === 'completed') {
             return back()->withErrors(['status' => 'Work is already completed.']);
