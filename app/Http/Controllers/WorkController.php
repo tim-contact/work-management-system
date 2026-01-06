@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Work;
+use App\Models\WorkSession;
 
 class WorkController extends Controller
 {
@@ -84,4 +85,88 @@ class WorkController extends Controller
         $work->delete();
         return redirect('/works')->with('success', 'Work deleted successfully.');     
     }
+
+    public function start(Work $work) {
+        abort_unless ($work->user_id === auth()->id(), 403);
+
+        if ($work->status === 'completed') {
+            return back()->withErrors(['status' => 'Completed work cannot be started.']);
+        }
+
+        $runningSession = $work->workSessions()->whereNull('stopped_at')->first();
+
+        if ($runningSession) {
+            return back()->withErrors(['session' => 'A work session is already running for this work.']);
+        }
+
+        $work->workSessions()->create([
+            'started_at' => now(),
+        ]);
+
+        $work->update(['status' => 'running', 'started_at' => $work->started_at ?? now()]);
+
+        return back()->with('success', 'Work session started.');
+
+    }
+
+    public function stop(Work $work) {
+        abort_unless ($work->user_id === auth()->id(), 403);
+
+        if ($work->status === 'completed') {
+            return back()->withErrors(['status' => 'Completed work cannot be stopped.']);
+        }
+
+        if ($work->status !== 'running') {
+            return back()->withErrors(['status' => 'Only running work can be stopped.']);
+        }
+
+        $session = $work->workSessions()->whereNull('stopped_at')->first();
+
+        if (! $session) {
+            return back()->withErrors(['session' => 'No active work session found for this work.']);
+        }
+
+        $duration = abs(now()->diffInSeconds($session->started_at));
+
+        $session->update([
+            'stopped_at' => now(),
+            'duration' => $duration,
+        ]);
+
+        $work->update(['status' => 'pending']);
+
+        $hours = floor($duration / 3600);
+        $minutes = floor(($duration % 3600) / 60);
+        $seconds = $duration % 60;
+        $formattedDuration = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+
+        return back()->with('success', "Work session stopped. Duration: {$formattedDuration}");
+
+
+    }
+
+    public function completed(Work $work) {
+        abort_unless ($work->user_id === auth()->id(), 403);
+
+        if ($work->status === 'completed') {
+            return back()->withErrors(['status' => 'Work is already completed.']);
+        }
+        
+        $runningSession = $work->workSessions()->whereNull('stopped_at')->first();
+
+        if ($runningSession) {
+            $duration = abs(now()->diffInSeconds($runningSession->started_at));
+
+            $runningSession->update([
+                'stopped_at' => now(),
+                'duration' => $duration,
+            ]);
+
+        }
+
+        $work->update(['status' => 'completed']);
+
+        return back()->with('success', 'Work marked as completed.');
+    }
+
 }
