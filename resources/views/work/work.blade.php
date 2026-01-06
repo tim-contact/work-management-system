@@ -79,6 +79,9 @@
 
                                 <div class="mt-2 text-sm">
                                     <span class="badge badge-outline">{{ $work->status }}</span>
+                                    @if(in_array($work->status, ['pending', 'completed']) && $work->totalDuration() > 0)
+                                    <div class="text-sm text-base-content/60 mt-2">Time Taken: {{ gmdate('H:i:s', $work->totalDuration() )}}</div>
+                                    @endif
                                 </div>
 
                                 <div class="text-sm text-base-content/60 mt-2">
