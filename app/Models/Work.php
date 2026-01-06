@@ -28,5 +28,10 @@ class Work extends Model
         return $this->hasMany(WorkSession::class);
     }
 
+    public function totalDuration(): int {
+        return (int) $this->workSessions()->sum('duration');
+    }
+
+
 
 }
